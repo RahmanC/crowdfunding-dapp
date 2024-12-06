@@ -59,12 +59,12 @@ const Navbar = () => {
         <Link href="/" className="flex items-center space-x-2">
           <Image
             src={logo}
-            alt="Platform Logo"
+            alt="Logo"
             width={40}
             height={40}
             className="hover:scale-110 transition-transform"
           />
-          <span className="text-xl font-bold text-gray-800">MyPlatform</span>
+          <span className="text-xl font-bold text-gray-800">CrowdFund</span>
         </Link>
 
         {/* Desktop Navigation */}
