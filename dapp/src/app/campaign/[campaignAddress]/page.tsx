@@ -3,6 +3,7 @@ import { client } from "@/app/client";
 import { TierCard } from "@/components/TierCard";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { getContract, prepareContractCall, ThirdwebContract } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
 import {
@@ -11,6 +12,17 @@ import {
   useActiveAccount,
   useReadContract,
 } from "thirdweb/react";
+import {
+  Edit,
+  Check,
+  Clock,
+  Target,
+  DollarSign,
+  TrendingUp,
+  Plus,
+  PlusCircle,
+  X,
+} from "lucide-react";
 
 export default function CampaignPage() {
   const account = useActiveAccount();
@@ -98,68 +110,146 @@ export default function CampaignPage() {
     params: [],
   });
 
+  console.log({ status });
+
+  const statusLabels = ["Active", "Successful", "Inactive"];
+  const statusColors = ["text-blue-600", "text-green-600", "text-red-600"];
+
   return (
-    <div className="mx-auto max-w-7xl px-2 mt-4 sm:px-6 lg:px-8">
-      <div className="flex flex-row justify-between items-center">
-        {!isLoadingName && <p className="text-4xl font-semibold">{name}</p>}
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-row justify-between items-center mb-8"
+      >
+        {!isLoadingName && (
+          <h1 className="text-4xl font-bold text-gray-900 flex items-center">
+            {name}
+            {status !== undefined && (
+              <span
+                className={`ml-4 text-sm px-3 py-1 rounded-full ${statusColors[status]} bg-opacity-10 bg-current`}
+              >
+                {statusLabels[status]}
+              </span>
+            )}
+          </h1>
+        )}
+
         {owner === account?.address && (
-          <div className="flex flex-row">
-            {isEditing && (
-              <p className="px-4 py-2 bg-gray-500 text-white rounded-md mr-2">
-                Status:
-                {status === 0
-                  ? " Active"
-                  : status === 1
-                  ? " Successful"
-                  : status === 2
-                  ? " Failed"
-                  : "Unknown"}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            {isEditing ? (
+              <>
+                <Check className="mr-2" size={18} /> Done
+              </>
+            ) : (
+              <>
+                <Edit className="mr-2" size={18} /> Edit
+              </>
+            )}
+          </motion.button>
+        )}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="grid md:grid-cols-2 gap-8"
+      >
+        {/* Left Column: Campaign Details */}
+        <div className="space-y-6">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-lg">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Target className="mr-3 text-blue-600" size={24} />
+              Description
+            </h2>
+            <p className="text-gray-600">{description}</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-lg">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Clock className="mr-3 text-blue-600" size={24} />
+              Deadline
+            </h2>
+            {!isLoadingDeadline && (
+              <p className="text-gray-600">
+                {deadlineDate.toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+                {hasDeadlinePassed && (
+                  <span className="ml-2 text-red-500 text-sm">
+                    (Deadline Passed)
+                  </span>
+                )}
               </p>
             )}
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded-md"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              {isEditing ? "Done" : "Edit"}
-            </button>
-          </div>
-        )}
-      </div>
-      <div className="my-4">
-        <p className="text-lg font-semibold">Description:</p>
-        <p>{description}</p>
-      </div>
-      <div className="mb-4">
-        <p className="text-lg font-semibold">Deadline</p>
-        {!isLoadingDeadline && <p>{deadlineDate.toDateString()}</p>}
-      </div>
-      {!isLoadingBalance && (
-        <div className="mb-4">
-          <p className="text-lg font-semibold">
-            Campaign Goal: ${goal?.toString()}
-          </p>
-          <div className="relative w-full h-6 bg-gray-200 rounded-full dark:bg-gray-700">
-            <div
-              className="h-6 bg-blue-600 rounded-full dark:bg-blue-500 text-right"
-              style={{ width: `${balancePercentage?.toString()}%` }}
-            >
-              <p className="text-white dark:text-white text-xs p-1">
-                ${balance?.toString()}
-              </p>
-            </div>
-            <p className="absolute top-0 right-0 text-white dark:text-white text-xs p-1">
-              {balancePercentage >= 100
-                ? ""
-                : `${balancePercentage?.toString()}%`}
-            </p>
           </div>
         </div>
-      )}
-      <div>
-        <p className="text-lg font-semibold">Tiers:</p>
-        <div className="grid grid-cols-3 gap-4">
+
+        {/* Right Column: Funding Progress */}
+        <div className="space-y-6">
+          {!isLoadingBalance && (
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-lg">
+              <h2 className="text-xl font-semibold mb-4 flex items-center">
+                <DollarSign className="mr-3 text-blue-600" size={24} />
+                Funding Progress
+              </h2>
+              <div className="w-full bg-gray-200 rounded-full h-4 mb-4 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${balancePercentage}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="h-4 bg-blue-600 rounded-full flex items-center justify-end"
+                >
+                  <span className="text-white text-xs mr-2">
+                    {balancePercentage.toFixed(1)}%
+                  </span>
+                </motion.div>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Raised: ${balance?.toString()}</span>
+                <span>Goal: ${goal?.toString()}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Tiers Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+        className="mt-8"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+            <TrendingUp className="mr-3 text-blue-600" size={24} />
+            Funding Tiers
+          </h2>
+          {isEditing && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <Plus className="mr-2" size={18} /> Add Tier
+            </motion.button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {isLoadingTiers ? (
-            <p>Loading...</p>
+            <p>Loading tiers...</p>
           ) : tiers && tiers.length > 0 ? (
             tiers.map((tier, index) => (
               <TierCard
@@ -173,24 +263,17 @@ export default function CampaignPage() {
           ) : (
             !isEditing && <p>No tiers available</p>
           )}
-          {isEditing && (
-            // Add a button card with text centered in the middle
-            <button
-              className="max-w-sm flex flex-col text-center justify-center items-center font-semibold p-6 bg-blue-500 text-white border border-slate-100 rounded-lg shadow"
-              onClick={() => setIsModalOpen(true)}
-            >
-              + Add Tier
-            </button>
-          )}
         </div>
-      </div>
+      </motion.div>
 
-      {isModalOpen && (
-        <CreateCampaignModal
-          setIsModalOpen={setIsModalOpen}
-          contract={contract}
-        />
-      )}
+      <AnimatePresence>
+        {isModalOpen && (
+          <CreateCampaignModal
+            setIsModalOpen={setIsModalOpen}
+            contract={contract}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -208,16 +291,32 @@ const CreateCampaignModal = ({
   const [tierAmount, setTierAmount] = useState<bigint>(1n);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center backdrop-blur-md">
-      <div className="w-1/2 bg-slate-100 p-6 rounded-md">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center backdrop-blur-sm"
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8"
+      >
         <div className="flex justify-between items-center mb-4">
-          <p className="text-lg font-semibold">Create a Funding Tier</p>
-          <button
-            className="text-sm px-4 py-2 bg-slate-600 text-white rounded-md"
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+            <PlusCircle className="mr-3 text-blue-500" />
+            Create a Funding Tier
+          </h2>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => setIsModalOpen(false)}
+            className="text-gray-500 hover:text-gray-700"
           >
-            Close
-          </button>
+            <X size={24} />
+          </motion.button>
         </div>
         <div className="flex flex-col">
           <label>Tier Name:</label>
@@ -249,11 +348,12 @@ const CreateCampaignModal = ({
             }}
             onError={(error) => alert(`Error: ${error.message}`)}
             theme={lightTheme()}
+            className="w-full mt-4 flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
             Add Tier
           </TransactionButton>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

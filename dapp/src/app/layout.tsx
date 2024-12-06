@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className="bg-slate-100 text-slate-700">
         <ThirdwebProvider>
           <Navbar />
-          {children}
+          <div className="pt-12">{children}</div>
         </ThirdwebProvider>
       </body>
     </html>

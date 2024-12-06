@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "build": "cd dapp && next build",
+    "start": "cd dapp && next start",
+    "lint": "cd dapp && next lint"
   },
   "dependencies": {
+    "framer-motion": "^11.13.1",
+    "lucide-react": "^0.468.0",
     "next": "14.1.0",
     "react": "^18.3",
     "react-dom": "^18.3",
