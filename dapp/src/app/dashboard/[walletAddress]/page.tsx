@@ -1,16 +1,17 @@
 "use client";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { client } from "@/app/client";
 import { CROWDFUNDING_FACTORY } from "@/app/constants/contract";
 import { MyCampaignCard } from "@/components/MyCampaignCard";
-import { useState } from "react";
 import { getContract } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
-import { deployPublishedContract } from "thirdweb/deploys";
 import { useActiveAccount, useReadContract } from "thirdweb/react";
+import { PlusCircle, Folder, AlertCircle } from "lucide-react";
+import { CreateCampaignModal } from "@/components/CreateCampaignModal";
 
 export default function DashboardPage() {
   const account = useActiveAccount();
-
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const contract = getContract({
@@ -32,158 +33,97 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 mt-16 sm:px-6 lg:px-8">
-      <div className="flex flex-row justify-between items-center mb-8">
-        <p className="text-4xl font-semibold">Dashboard</p>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-md"
-          onClick={() => setIsModalOpen(true)}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-12">
+      <div className="container mx-auto px-4 max-w-7xl">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-row justify-between items-center mb-12"
         >
-          Create Campaign
-        </button>
-      </div>
-      <p className="text-2xl font-semibold mb-4">My Campaigns:</p>
-      <div className="grid grid-cols-3 gap-4">
-        {!isLoadingMyCampaigns &&
-          (myCampaigns && myCampaigns.length > 0 ? (
-            myCampaigns.map((campaign, index) => (
-              <MyCampaignCard
-                key={index}
-                contractAddress={campaign.campaignAddress}
-              />
-            ))
+          <h1 className="text-5xl font-extrabold text-gray-900 flex items-center">
+            <Folder className="mr-4 text-blue-500" size={48} />
+            Dashboard
+          </h1>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <PlusCircle className="mr-2" />
+            Create Campaign
+          </motion.button>
+        </motion.div>
+
+        {/* Campaigns Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            My Campaigns
+          </h2>
+
+          {isLoadingMyCampaigns ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[1, 2, 3].map((_, index) => (
+                <motion.div
+                  key={index}
+                  className="bg-white rounded-xl shadow-md p-6 animate-pulse"
+                >
+                  <div className="h-48 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                </motion.div>
+              ))}
+            </div>
           ) : (
-            <p>No campaigns</p>
-          ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {myCampaigns && myCampaigns.length > 0 ? (
+                myCampaigns.map((campaign, index) => (
+                  <motion.div
+                    key={campaign.campaignAddress}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <MyCampaignCard
+                      contractAddress={campaign.campaignAddress}
+                    />
+                  </motion.div>
+                ))
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="col-span-full text-center py-12 bg-white rounded-xl shadow-md"
+                >
+                  <AlertCircle
+                    className="mx-auto mb-4 text-blue-500"
+                    size={48}
+                  />
+                  <p className="text-xl text-gray-500">
+                    No campaigns yet. Start your first campaign!
+                  </p>
+                </motion.div>
+              )}
+            </div>
+          )}
+        </motion.div>
       </div>
 
-      {isModalOpen && (
-        <CreateCampaignModal
-          setIsModalOpen={setIsModalOpen}
-          refetch={refetch}
-        />
-      )}
+      {/* Create Campaign Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <CreateCampaignModal
+            setIsModalOpen={setIsModalOpen}
+            refetch={refetch}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
-type CreateCampaignModalProps = {
-  setIsModalOpen: (value: boolean) => void;
-  refetch: () => void;
-};
-
-const CreateCampaignModal = ({
-  setIsModalOpen,
-  refetch,
-}: CreateCampaignModalProps) => {
-  const account = useActiveAccount();
-  const [isDeployingContract, setIsDeployingContract] =
-    useState<boolean>(false);
-  const [campaignName, setCampaignName] = useState<string>("");
-  const [campaignDescription, setCampaignDescription] = useState<string>("");
-  const [campaignGoal, setCampaignGoal] = useState<number>(1);
-  const [campaignDeadline, setCampaignDeadline] = useState<number>(1);
-
-  // Deploy contract from CrowdfundingFactory
-  const handleDeployContract = async () => {
-    setIsDeployingContract(true);
-    try {
-      console.log("Deploying contract...");
-      const contractAddress = await deployPublishedContract({
-        client: client,
-        chain: baseSepolia,
-        account: account!,
-        contractId: "Crowdfunding",
-        contractParams: [
-          campaignName,
-          campaignDescription,
-          campaignGoal,
-          campaignDeadline,
-        ],
-        publisher: "0x80bac8C84ef572c9b89F6501a03eA4685D3699D3",
-        version: "1.0.0",
-      });
-      alert("Contract deployed successfully!");
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsDeployingContract(false);
-      setIsModalOpen(false);
-      refetch;
-    }
-  };
-
-  const handleCampaignGoal = (value: number) => {
-    if (value < 1) {
-      setCampaignGoal(1);
-    } else {
-      setCampaignGoal(value);
-    }
-  };
-
-  const handleCampaignLengthhange = (value: number) => {
-    if (value < 1) {
-      setCampaignDeadline(1);
-    } else {
-      setCampaignDeadline(value);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center backdrop-blur-md">
-      <div className="w-1/2 bg-slate-100 p-6 rounded-md">
-        <div className="flex justify-between items-center mb-4">
-          <p className="text-lg font-semibold">Create a Campaign</p>
-          <button
-            className="text-sm px-4 py-2 bg-slate-600 text-white rounded-md"
-            onClick={() => setIsModalOpen(false)}
-          >
-            Close
-          </button>
-        </div>
-        <div className="flex flex-col">
-          <label>Campaign Name:</label>
-          <input
-            type="text"
-            value={campaignName}
-            onChange={(e) => setCampaignName(e.target.value)}
-            placeholder="Campaign Name"
-            className="mb-4 px-4 py-2 bg-slate-300 rounded-md"
-          />
-          <label>Campaign Description:</label>
-          <textarea
-            value={campaignDescription}
-            onChange={(e) => setCampaignDescription(e.target.value)}
-            placeholder="Campaign Description"
-            className="mb-4 px-4 py-2 bg-slate-300 rounded-md"
-          ></textarea>
-          <label>Campaign Goal:</label>
-          <input
-            type="number"
-            value={campaignGoal}
-            onChange={(e) => handleCampaignGoal(parseInt(e.target.value))}
-            className="mb-4 px-4 py-2 bg-slate-300 rounded-md"
-          />
-          <label>{`Campaign Length (Days)`}</label>
-          <div className="flex space-x-4">
-            <input
-              type="number"
-              value={campaignDeadline}
-              onChange={(e) =>
-                handleCampaignLengthhange(parseInt(e.target.value))
-              }
-              className="mb-4 px-4 py-2 bg-slate-300 rounded-md"
-            />
-          </div>
-
-          <button
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md"
-            onClick={handleDeployContract}
-          >
-            {isDeployingContract ? "Creating Campaign..." : "Create Campaign"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};

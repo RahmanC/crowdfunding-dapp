@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    <!-- Gradient Background -->
+    <defs>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#1E4FC4;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+
+    <!-- Background Circle -->
+    <circle cx="200" cy="200" r="190" fill="url(#bgGradient)" />
+
+    <!-- Stylized Hands Joining -->
+    <path d="M150 220 C200 180, 250 180, 300 220" stroke="#FFFFFF" stroke-width="15" fill="none" opacity="0.8" />
+
+    <!-- Funding Symbol -->
+    <path d="M200 120 
+            Q220 140, 200 160 
+            Q180 140, 200 120 Z" fill="#FFD700" stroke="#000000" stroke-width="3" />
+
+    <!-- Coin/Money Elements -->
+    <circle cx="200" cy="180" r="40" fill="#FFD700" opacity="0.7" />
+    <path d="M180 160 L220 160" stroke="#000000" stroke-width="4" opacity="0.6" />
+    <path d="M200 140 L200 220" stroke="#000000" stroke-width="2" opacity="0.4" />
+</svg>
