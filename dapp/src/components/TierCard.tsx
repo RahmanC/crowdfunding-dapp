@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { prepareContractCall, ThirdwebContract } from "thirdweb";
 import { TransactionButton } from "thirdweb/react";
-import { Zap, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 type Tier = {
   name: string;
@@ -67,8 +67,10 @@ export const TierCard: React.FC<TierCardProps> = ({
                 value: tier.amount,
               })
             }
-            onError={(error) => alert(`Error: ${error.message}`)}
-            onTransactionConfirmed={async () => alert("Funded successfully!")}
+            onError={(error) => toast.error(`Error: ${error.message}`)}
+            onTransactionConfirmed={async () =>
+              toast.success("Funded successfully!")
+            }
             className="flex gap-2 items-center justify-center px-auto py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:text-white transition-colors"
           >
             {/* <Zap size={18} /> */}
@@ -84,9 +86,9 @@ export const TierCard: React.FC<TierCardProps> = ({
                   params: [BigInt(index)],
                 })
               }
-              onError={(error) => alert(`Error: ${error.message}`)}
+              onError={(error) => toast.error(`Error: ${error.message}`)}
               onTransactionConfirmed={async () =>
-                alert("Removed successfully!")
+                toast.success("Removed successfully!")
               }
               className="w-full flex items-center justify-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 hover:text-white transition-colors"
             >

@@ -23,6 +23,7 @@ import {
   PlusCircle,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CampaignPage() {
   const account = useActiveAccount();
@@ -109,8 +110,6 @@ export default function CampaignPage() {
     method: "function state() view returns (uint8)",
     params: [],
   });
-
-  console.log({ status });
 
   const statusLabels = ["Active", "Successful", "Inactive"];
   const statusColors = ["text-blue-600", "text-green-600", "text-red-600"];
@@ -343,10 +342,10 @@ const CreateCampaignModal = ({
               })
             }
             onTransactionConfirmed={async () => {
-              alert("Tier added successfully!");
+              toast("Tier added successfully!");
               setIsModalOpen(false);
             }}
-            onError={(error) => alert(`Error: ${error.message}`)}
+            onError={(error) => toast(`Error: ${error.message}`)}
             theme={lightTheme()}
             className="w-full mt-4 flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
           >

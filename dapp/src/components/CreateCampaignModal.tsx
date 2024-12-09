@@ -6,6 +6,7 @@ import { deployPublishedContract } from "thirdweb/deploys";
 import { useActiveAccount } from "thirdweb/react";
 import { motion } from "framer-motion";
 import { PlusCircle, Save, X } from "lucide-react";
+import { toast } from "sonner";
 
 type CreateCampaignModalProps = {
   setIsModalOpen: (value: boolean) => void;
@@ -27,25 +28,25 @@ export const CreateCampaignModal = ({
   const handleDeployContract = async () => {
     setIsDeployingContract(true);
     try {
-      const contractAddress = await deployPublishedContract({
+      await deployPublishedContract({
         client: client,
         chain: baseSepolia,
         account: account!,
         contractId: "Crowdfunding",
-        contractParams: [
-          campaignName,
-          campaignDescription,
-          campaignGoal,
-          campaignDeadline,
-        ],
+        contractParams: {
+          _name: campaignName,
+          _description: campaignDescription,
+          _goal: campaignGoal,
+          _durationInDays: campaignDeadline,
+        } as Record<string, any>,
         publisher: "0x80bac8C84ef572c9b89F6501a03eA4685D3699D3",
-        version: "1.0.0",
+        version: "1.0.2",
       });
-      alert("Contract deployed successfully!");
+      toast.success("Campaign deployed successfully!");
       refetch();
     } catch (error) {
       console.error(error);
-      alert("Failed to deploy campaign");
+      toast.error("Failed to deploy campaign");
     } finally {
       setIsDeployingContract(false);
       setIsModalOpen(false);

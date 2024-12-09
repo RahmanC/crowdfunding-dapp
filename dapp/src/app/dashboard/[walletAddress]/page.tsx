@@ -6,16 +6,8 @@ import { CROWDFUNDING_FACTORY } from "@/app/constants/contract";
 import { MyCampaignCard } from "@/components/MyCampaignCard";
 import { getContract } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
-import { deployPublishedContract } from "thirdweb/deploys";
 import { useActiveAccount, useReadContract } from "thirdweb/react";
-import {
-  PlusCircle,
-  Folder,
-  ChevronRight,
-  Save,
-  X,
-  AlertCircle,
-} from "lucide-react";
+import { PlusCircle, Folder, AlertCircle } from "lucide-react";
 import { CreateCampaignModal } from "@/components/CreateCampaignModal";
 
 export default function DashboardPage() {
